@@ -28,5 +28,20 @@ if (
   process.exit(1);
 }
 
+// Second validation layer: parse the URL and confirm the host and path
+// shape, so a string that merely looks like a post address cannot slip
+// through if the pattern above is ever loosened.
+const parsed = new URL(post.url);
+const segments = parsed.pathname.split('/').filter(Boolean);
+if (
+  (parsed.hostname !== 'x.com' && parsed.hostname !== 'twitter.com') ||
+  segments.length !== 3 ||
+  segments[1] !== 'status' ||
+  !/^\d+$/.test(segments[2])
+) {
+  console.error('POST.json URL failed structural validation.');
+  process.exit(1);
+}
+
 mkdirSync(OUTPUT_DIR, { recursive: true });
 copyFileSync(src, join(OUTPUT_DIR, 'POST.json'));
